@@ -23,4 +23,11 @@ class ThemeExtractor:
             alpha='asymmetric',
             random_state=42
         )
-        return self.lda_model.print_topics()
+
+        # Formater les résultats pour une meilleure lisibilité
+        formatted_topics = []
+        for topic_id, topic in self.lda_model.print_topics():
+            formatted_topic = ', '.join(topic.split(' + ')[:5])  # Limiter aux 5 premiers mots
+            formatted_topics.append(formatted_topic)
+
+        return formatted_topics

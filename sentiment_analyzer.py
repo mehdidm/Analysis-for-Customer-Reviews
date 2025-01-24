@@ -1,6 +1,6 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
-
+import numpy as np
 
 class SentimentAnalyzer:
     def __init__(self):
@@ -15,3 +15,9 @@ class SentimentAnalyzer:
     def evaluate(self, X_test, y_test):
         y_pred = self.model.predict(X_test)
         return classification_report(y_test, y_pred, output_dict=True)
+
+    def get_feature_importance(self):
+        """
+        Retourne l'importance absolue des caractéristiques
+        """
+        return np.abs(self.model.coef_[0])
