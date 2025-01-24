@@ -60,19 +60,7 @@ streamlit run app/streamlit_app.py
 * **Visualization**: Matplotlib, Plotly, Streamlit
 * **Deployment**: Streamlit Cloud, Docker
 
-## 📂 Project Structure
-```plaintext
-ReviewSentinel/
-├── data/               # Sample datasets
-├── app/                # Streamlit interface
-├── core/               # Processing modules
-│   ├── data_loader.py
-│   ├── text_preprocessor.py
-│   └── ...
-├── pipeline/           # Analysis pipeline
-├── requirements.txt    # Dependencies
-└── LICENSE
-```
+
 
 ## 🤝 Contributing
 Contributions are welcome! Here's how:
