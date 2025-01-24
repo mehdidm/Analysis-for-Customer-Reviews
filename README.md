@@ -8,7 +8,7 @@
 
 ReviewSentinel is an intelligent NLP-based sentiment analysis system designed to extract trends and classify customer feedback automatically.
 
-![Dashboard Preview](https://via.placeholder.com/800x400.png?text=ReviewSentinel+Dashboard+Preview)
+![Dashboard Preview]([[https://via.placeholder.com/800x400.png?text=ReviewSentinel+Dashboard+Preview](https://analysis-for-customer-reviews.streamlit.app/)](https://analysis-for-customer-reviews.streamlit.app/))
 
 ---
 
@@ -60,19 +60,7 @@ streamlit run app/streamlit_app.py
 * **Visualization**: Matplotlib, Plotly, Streamlit
 * **Deployment**: Streamlit Cloud, Docker
 
-## 📂 Project Structure
-```plaintext
-ReviewSentinel/
-├── data/               # Sample datasets
-├── app/                # Streamlit interface
-├── core/               # Processing modules
-│   ├── data_loader.py
-│   ├── text_preprocessor.py
-│   └── ...
-├── pipeline/           # Analysis pipeline
-├── requirements.txt    # Dependencies
-└── LICENSE
-```
+
 
 ## 🤝 Contributing
 Contributions are welcome! Here's how:
