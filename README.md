@@ -8,7 +8,7 @@
 
 ReviewSentinel is an intelligent NLP-based sentiment analysis system designed to extract trends and classify customer feedback automatically.
 
-![Dashboard Preview](https://via.placeholder.com/800x400.png?text=ReviewSentinel+Dashboard+Preview)
+![Dashboard Preview]([https://via.placeholder.com/800x400.png?text=ReviewSentinel+Dashboard+Preview](https://analysis-for-customer-reviews.streamlit.app/))
 
 ---
 
