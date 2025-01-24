@@ -1,151 +1,153 @@
+from datetime import time
 import streamlit as st
-import nltk
 import matplotlib.pyplot as plt
+import time
+import pandas as pd
+from sklearn.model_selection import train_test_split
 
 from data_loader import AdvancedDataLoader
-from text_preprocessor import AdvancedTextPreprocessor
 from feature_extractor import AdvancedFeatureExtractor
-from theme_extractor import ThemeExtractor
 from sentiment_analyzer import SentimentAnalyzer
+from text_preprocessor import AdvancedTextPreprocessor
+
 
 class SentimentAnalysisPipeline:
     def __init__(self, data_path):
-        self.data_path = data_path
         self.data_loader = AdvancedDataLoader(data_path)
         self.text_preprocessor = AdvancedTextPreprocessor()
         self.feature_extractor = AdvancedFeatureExtractor()
-        self.theme_extractor = ThemeExtractor()
         self.sentiment_analyzer = SentimentAnalyzer()
+        self.is_trained = False
         self.df = None
-        self.features = None
         self.X_train = None
         self.X_test = None
         self.y_train = None
         self.y_test = None
-        self.topics = None
 
     def run_analysis(self):
-        # Load data
-        self.df = self.data_loader.load_data()
+        """Entraîne le modèle et retourne les résultats"""
+        if not self.is_trained:
+            # Chargement et prétraitement
+            self.df = self.data_loader.load_data()
+            self.df['processed'] = self.df['reviewText'].apply(self.text_preprocessor.preprocess)
 
-        # Preprocess text
-        self.df['processed_review'] = self.df['reviewText'].apply(self.text_preprocessor.preprocess)
+            # Vectorisation
+            self.feature_extractor.fit(self.df['processed'])
+            features = self.feature_extractor.transform(self.df['processed'])
 
-        # Extract features
-        self.features = self.feature_extractor.extract_features(self.df['processed_review'])
+            # Split des données
+            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+                features,
+                self.df['overall'].apply(lambda x: 'positive' if x > 3 else 'negative'),
+                test_size=0.2,
+                random_state=42
+            )
 
-        # Prepare data for sentiment analysis
-        X = self.features
-        y = self.df['overall'].apply(lambda x: 'positive' if x > 3 else 'negative')
+            # Entraînement
+            self.sentiment_analyzer.train(self.X_train, self.y_train)
 
-        # Split data
-        self.X_train, self.X_test, self.y_train, self.y_test = self.sentiment_analyzer.prepare_data(X, y)
+            # Calcul des métriques
+            metrics = self.sentiment_analyzer.evaluate(self.X_test, self.y_test)
 
-        # Train and evaluate model
-        self.sentiment_analyzer.train_model(self.X_train, self.y_train)
-        model_metrics = self.sentiment_analyzer.evaluate_model(self.X_test, self.y_test)
+            self.is_trained = True
 
-        # Extract themes
-        processed_texts = [' '.join(nltk.word_tokenize(text.lower())) for text in self.df['processed_review']]
-        self.topics = self.extract_and_parse_topics(processed_texts)
+            return {
+                'metrics': metrics,
+                'preprocessed_data': self.df[['reviewText', 'processed']],
+                'feature_names': self.feature_extractor.get_feature_names()
+            }
 
-        return model_metrics
+    def predict_single_review(self, user_review):
+        """Prédiction pour une revue unique"""
+        if not self.is_trained:
+            raise RuntimeError("Le modèle n'a pas été entraîné. Exécutez run_analysis() d'abord.")
 
-    def extract_and_parse_topics(self, processed_texts):
-        # Ensure texts are properly tokenized
-        if not processed_texts:
-            return []
+        # Prétraitement
+        processed_text = self.text_preprocessor.preprocess(user_review)
 
-        # Tokenize texts if they aren't already tokenized
-        tokenized_texts = []
-        for text in processed_texts:
-            if isinstance(text, str):
-                # Tokenize string texts
-                tokens = nltk.word_tokenize(text.lower())
-            elif isinstance(text, list):
-                # If already a list of tokens, use as-is
-                tokens = text
-            else:
-                # Skip invalid text types
-                continue
+        # Vectorisation
+        features = self.feature_extractor.transform([processed_text])
 
-            tokenized_texts.append(tokens)
+        # Prédiction
+        return self.sentiment_analyzer.predict(features)[0]
 
-        try:
-            topics = self.theme_extractor.extract_topics(tokenized_texts)
-
-            # Debug print
-            print("Raw topics:", topics)
-
-            # Handle different topic formats
-            if not topics:
-                return []
-
-            # If topics are a list of strings
-            if isinstance(topics, list) and all(isinstance(t, str) for t in topics):
-                return topics[:5]
-
-            # If topics are a list of tuples
-            if isinstance(topics[0], tuple):
-                return [topic for topic, _ in topics[:5]]
-
-            # If topics is a single string
-            if isinstance(topics, str):
-                import re
-                unique_topics = set(re.findall(r'\b\w+\b', topics))
-                return list(unique_topics)[:5]
-
-            # Fallback
-            return []
-
-        except Exception as e:
-            print(f"Error extracting topics: {e}")
-            return []
 def create_dashboard():
-    # Streamlit dashboard configuration
-    st.set_page_config(page_title="Sentiment Analysis Dashboard", layout="wide")
-    st.title("Sentiment Analysis Dashboard")
+    st.set_page_config(page_title="Analyse de Sentiments", layout="wide")
+    st.title("📈 Tableau de Bord Interactif")
 
-    # Sidebar for data input
-    st.sidebar.header("Data Input")
-    data_path = st.sidebar.text_input("Data Path", value="./sample_data/amazon_reviews.csv")
+    if 'pipeline' not in st.session_state:
+        st.session_state.pipeline = None
+        st.session_state.results = None
 
-    # Analysis button
-    if st.sidebar.button("Run Analysis"):
+    uploaded_file = st.file_uploader("Téléversez vos avis clients (CSV)", type="csv")
+
+    if uploaded_file:
         try:
-            # Initialize and run pipeline
-            pipeline = SentimentAnalysisPipeline(data_path)
-            model_metrics = pipeline.run_analysis()
+            if st.session_state.pipeline is None:
+                with st.spinner("Entraînement du modèle en cours..."):
+                    st.session_state.pipeline = SentimentAnalysisPipeline(uploaded_file)
+                    st.session_state.results = st.session_state.pipeline.run_analysis()
 
-            # Dashboard sections
-            col1, col2 = st.columns(2)
+            if st.session_state.results:
+                # Section Résultats
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.subheader("Performance du Modèle")
+                    st.write("**Précision Globale:**", st.session_state.results['metrics']['accuracy'])
+                    st.write("**Précision Classe Positive:**",
+                             st.session_state.results['metrics']['positive']['precision'])
+                    st.write("**Rappel Classe Négative:**", st.session_state.results['metrics']['negative']['recall'])
 
-            with col1:
-                # Sentiment Distribution
-                st.subheader("Sentiment Distribution")
-                fig, ax = plt.subplots()
-                pipeline.sentiment_analyzer.visualize_sentiment_distribution(pipeline.df, ax)
-                st.pyplot(fig)
+                with col2:
+                    st.subheader("Distribution des Sentiments")
+                    fig, ax = plt.subplots()
+                    ax.pie(
+                        [st.session_state.results['metrics']['positive']['support'],
+                         st.session_state.results['metrics']['negative']['support']],
+                        labels=['Positif', 'Négatif'],
+                        autopct='%1.1f%%'
+                    )
+                    st.pyplot(fig)
 
-            with col2:
-                st.subheader("Top Topics")
-                if pipeline.topics:
-                    print("Topics to display:", pipeline.topics)
-                    for topic in pipeline.topics:
-                        st.write(f"- {topic}")
-                else:
-                    st.write("No topics found")
+                # Export des données
+                st.subheader("Aperçu des Données Prétraitées")
+                st.dataframe(st.session_state.results['preprocessed_data'].head())
 
-            # Model Performance
-            st.header("Model Performance")
-            st.write("Evaluation Metrics:")
-            st.write(model_metrics)
+                csv = st.session_state.results['preprocessed_data'].to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="📥 Exporter les données prétraitées",
+                    data=csv,
+                    file_name='donnees_pretraitees.csv',
+                    mime='text/csv'
+                )
+
+                # Analyse personnalisée
+                st.subheader("🔍 Analyse Personnalisée")
+                user_review = st.text_area("Entrez un avis à analyser:", key="review_input")
+
+                if st.button("Analyser"):
+                    if user_review:
+                        start_time = time.time()
+                        prediction = st.session_state.pipeline.predict_single_review(user_review)
+                        st.write(f"Temps d'analyse : {time.time() - start_time:.2f}s")
+
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.markdown("**Avis Original**")
+                            st.write(user_review)
+                        with col2:
+                            st.markdown("**Résultat d'Analyse**")
+                            st.metric("Sentiment Prédit", prediction.upper())
+                    else:
+                        st.warning("Veuillez entrer un avis à analyser")
 
         except Exception as e:
-            st.error(f"Error in analysis: {e}")
+            st.error(f"Erreur: {str(e)}")
+
 
 def main():
     create_dashboard()
+
 
 if __name__ == "__main__":
     main()

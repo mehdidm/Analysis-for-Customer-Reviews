@@ -1,29 +1,21 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
-import logging
-import pandas as pd
 
 
 class AdvancedFeatureExtractor:
-    def __init__(self, max_features=1000):
-        self.max_features = max_features
+    def __init__(self):
         self.vectorizer = TfidfVectorizer(
-            max_features=max_features,
+            max_features=2000,
+            min_df=5,
+            max_df=0.85,
             ngram_range=(1, 2),
-            min_df=2
+            stop_words='english'
         )
 
-        logging.basicConfig(level=logging.INFO)
-        self.logger = logging.getLogger(__name__)
+    def fit(self, texts):
+        self.vectorizer.fit(texts)
 
-    def extract_features(self, texts):
-        """Extract TF-IDF features from texts"""
-        self.logger.info(f"Extracting TF-IDF features (max_features={self.max_features})...")
+    def transform(self, texts):
+        return self.vectorizer.transform(texts)
 
-        # Transform texts to TF-IDF matrix
-        tfidf_matrix = self.vectorizer.fit_transform(texts)
-
-        # Convert to DataFrame for easier manipulation
-        return pd.DataFrame(
-            tfidf_matrix.toarray(),
-            columns=self.vectorizer.get_feature_names_out()
-        )
+    def get_feature_names(self):
+        return self.vectorizer.get_feature_names_out()
