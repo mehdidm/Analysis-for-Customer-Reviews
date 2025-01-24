@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="79a4b4c9-7928-4962-9752-389d4d277eb8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_loader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature_extractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/feature_extractor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sentiment_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/sentiment_analyzer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/text_preprocessor.py" beforeDir="false" afterPath="$PROJECT_DIR$/text_preprocessor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme_extractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/theme_extractor.py" afterDir="false" />
-    </list>
+    <list default="true" id="79a4b4c9-7928-4962-9752-389d4d277eb8" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
