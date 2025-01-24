@@ -1,4 +1,8 @@
-matplotlib==3.7.0
+# NLP
+spacy==3.7.4
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl
+
+# Autres dépendances
 streamlit==1.28.0
 pandas==2.0.3
 scikit-learn==1.3.0
